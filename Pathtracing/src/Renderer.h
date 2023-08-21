@@ -17,9 +17,10 @@ public:
 		bool Accumulate = true;
 		bool UseSkylight = true;
 		bool Antialiasing = true;
-		float Exposure = 0.5f;
+		float Exposure = 1.0f;
 
-		int SamplesPerPixel = 1;
+		glm::vec3 SkyColor{0.7f};
+
 		int Bounces = 5;
 	};
 

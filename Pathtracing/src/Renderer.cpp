@@ -107,6 +107,11 @@ namespace Utils {
 		return Utils::mix(f0, f90, ret);
 	}
 
+	static float Remap(float value, float fromMin, float fromMax, float toMin, float toMax)
+	{
+		return toMin + (toMax - toMin) * ((value - fromMin) / (fromMax - fromMin));
+	}
+
 }
 
 void Renderer::OnResize(uint32_t width, uint32_t height)
@@ -161,19 +166,8 @@ void Renderer::Render(const Scene& scene, const Camera& camera)
 			[this, y](uint32_t x)
 				{
 					glm::vec4 light(0.0f);
-					// iterate each pixel for the max samples
-					//int maxSamples = m_Settings.SamplesPerPixel;
-					//if (m_Settings.Antialiasing)
-					//{
-					//	for (int samples = 0; samples < maxSamples; samples++)
-					//	{
-					//		light += PerPixel(x, y);
-					//	}
-					//	// average the pixel samples
-					//	light /= maxSamples;
-					//}
-					//else
-						light += PerPixel(x, y);
+
+					light += PerPixel(x, y);
 
 					// accumulate sample data over time
 					m_AccumulationData[x + y * m_FinalImage->GetWidth()] += light;
@@ -253,24 +247,26 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 		// return sky color or black when scene is missed
 		if (payload.hitDistance == -1.0f)
 		{
-			glm::vec3 skyColor = glm::vec3(0.7f, 0.8f, 1.0f);
 			if(m_Settings.UseSkylight)
-				light += skyColor * contribution;
+				light += m_Settings.SkyColor * contribution;
 			break;
 		}
 
 
 		// get some scene info from the traced ray about the hit object and the material there
-		const Sphere& sphere = m_ActiveScene->Spheres[payload.ObjectIndex];
-		const Material& material = m_ActiveScene->Materials[sphere.MaterialIndex];
+		//const Sphere& sphere = m_ActiveScene->Spheres[payload.ObjectIndex];
 
-		
+		const Tri& tri = m_ActiveScene->Tris[payload.ObjectIndex];
+		const Material& material = m_ActiveScene->Materials[tri.MaterialIndex];
+
+		glm::vec3 specularCol = Utils::mix(glm::vec3(0.9f), material.Albedo, material.Specular);
 
 		if (payload.fromInside)
 			contribution *= exp(-material.TransmissionCoeff * payload.hitDistance);
 
 		// calculate the specular amount via the fresnel
-		float specularChance = material.Specular;
+		float specularChance = Utils::Remap(material.Specular, 0.0f,1.0f,0.05f,1.0f);
+		float materialSpec = specularChance;
 		float refreactionChance = material.Transmission;
 
 		float rayProbability = 1.0f;
@@ -279,9 +275,9 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 			specularChance = Utils::FresnelReflectAmount(
 				payload.fromInside ? material.IOR : 1.0f,
 				!payload.fromInside ? material.IOR : 1.0f,
-				ray.Direction, payload.Normal, material.Specular, 1.0f);
+				ray.Direction, payload.Normal, materialSpec, 1.0f);
 
-			float chanceMutliplier = (1.0f - specularChance) / (1.0f - material.Specular);
+			float chanceMutliplier = (1.0f - specularChance) / (1.0f - materialSpec);
 			refreactionChance *= chanceMutliplier;
 		}
 
@@ -324,7 +320,7 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 		specularRayDir = glm::normalize(Utils::mix(specularRayDir, diffuseRayDir, material.Roughness * material.Roughness));
 
 		glm::vec3 refractionRayDir = glm::refract(ray.Direction, payload.Normal, payload.fromInside ? material.IOR : 1.0f / material.IOR);
-		refractionRayDir = glm::normalize(Utils::mix(refractionRayDir, glm::normalize(-payload.Normal + Utils::InUnitSphere(seed)), material.TransmissionRoughness * material.TransmissionRoughness));
+		refractionRayDir = glm::normalize(Utils::mix(refractionRayDir, glm::normalize(-payload.Normal + Utils::InUnitSphere(seed)), material.Roughness * material.Roughness));
 
 		ray.Direction = Utils::mix(diffuseRayDir, specularRayDir, doSpecular); 
 		ray.Direction = Utils::mix(ray.Direction, refractionRayDir, doRefraction); 
@@ -334,7 +330,7 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 
 		// update the color multiplier
 		if(doRefraction == 0.0f)
-			contribution *= Utils::mix(material.Albedo, material.SpecularColor, doSpecular);
+			contribution *= Utils::mix(material.Albedo, specularCol, doSpecular);
 
 		contribution /= rayProbability;
 
@@ -351,7 +347,64 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 	return glm::vec4(light, 1.0f);
 }
 
+Renderer::HitPayload Renderer::TraceRay(const Ray& ray)
+{
+	int closestObjectIndex = -1;
+	float hitDistance = std::numeric_limits<float>::max();
+	
 
+	for (size_t i = 0; i < m_ActiveScene->Tris.size(); i++)
+	{
+		const Tri& tri = m_ActiveScene->Tris[i];
+
+		glm::vec3 origin = ray.Origin - tri.v0;
+
+		float NdotRayDirection = glm::dot(tri.normal, ray.Direction);
+		if (glm::abs(NdotRayDirection) < 0.0001f)
+			continue;
+
+		float D = -glm::dot(tri.normal, tri.v0);
+
+		float t = -(glm::dot(tri.normal, ray.Origin) + D) / NdotRayDirection;
+
+		if (t < 0.0f)
+			continue;
+
+		//if (glm::dot(ray.Direction, tri.normal) > 0)
+		//	continue;
+
+		glm::vec3 hitP = ray.Origin + t * ray.Direction;
+		glm::vec3 C;
+		glm::vec3 vp0 = hitP - tri.v0; 
+		C = glm::cross(tri.edge0, vp0);
+		if (glm::dot(tri.normal, C) < 0)
+			continue;
+
+		glm::vec3 vp1 = hitP - tri.v1; 
+		C = glm::cross(tri.edge1, vp1); 
+		if (glm::dot(tri.normal, C) < 0) 
+			continue;
+
+		glm::vec3 vp2 = hitP - tri.v2;  
+		C = glm::cross(tri.edge2, vp2); 
+		if (glm::dot(tri.normal, C) < 0) 
+			continue;
+
+		if (t > hitDistance)
+			continue;
+
+		hitDistance = t; 
+		closestObjectIndex = (int)i;
+	}
+
+	if (closestObjectIndex < 0)
+		return Miss(ray);
+
+	return ClosestHit(ray, hitDistance, closestObjectIndex, false);
+}
+
+#define BALLS 0
+#if BALLS
 Renderer::HitPayload Renderer::TraceRay(const Ray& ray)
 {
 	int closestSphere = -1;
@@ -360,8 +413,6 @@ Renderer::HitPayload Renderer::TraceRay(const Ray& ray)
 
 	for (size_t i = 0; i < m_ActiveScene->Spheres.size(); i++)
 	{
-		
-
 		const Sphere& sphere = m_ActiveScene->Spheres[i];
 		glm::vec3 origin = ray.Origin - sphere.Position;
 
@@ -373,13 +424,11 @@ Renderer::HitPayload Renderer::TraceRay(const Ray& ray)
 			continue;
 
 		float discriminant = b * b - 4.0f * a * c;
-
 		// no sphere was hit
 		if (discriminant < 0.0f)
 			continue;
 
 		// get hit distances
-
 		inside = false;
 		float closestT = (-b - sqrt(discriminant)) / (2.0f * a);
 		float f0 = (-b + sqrt(discriminant)) / (2.0f * a);
@@ -394,9 +443,7 @@ Renderer::HitPayload Renderer::TraceRay(const Ray& ray)
 			hitDistance = closestT;
 			closestSphere = (int)i;
 		}
-		
 	}
-
 	if (closestSphere < 0)
 		return Miss(ray);
 
@@ -420,6 +467,25 @@ Renderer::HitPayload Renderer::ClosestHit(const Ray& ray, float hitDistance, int
 	payload.WorldPosition += closestSphere.Position;
 	payload.fromInside = fromInside;
 	 
+	return payload;
+}
+#endif // 0
+
+Renderer::HitPayload Renderer::ClosestHit(const Ray& ray, float hitDistance, int objectIndex, bool fromInside)
+{
+	Renderer::HitPayload payload;
+	payload.hitDistance = hitDistance;
+	payload.ObjectIndex = objectIndex;
+
+	const Tri& closestTri = m_ActiveScene->Tris[objectIndex];
+	
+	glm::vec3 origin = ray.Origin - closestTri.Position;
+	payload.WorldPosition = origin + hitDistance * ray.Direction;
+	payload.Normal = closestTri.normal;
+
+	payload.WorldPosition += closestTri.Position;
+	payload.fromInside = fromInside;
+
 	return payload;
 }
 
