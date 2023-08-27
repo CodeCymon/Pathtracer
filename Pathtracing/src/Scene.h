@@ -30,16 +30,37 @@ struct Sphere
 
 struct Tri
 {
-	glm::vec3 Position{ 0.0f, 5.0f, 0.0f };
-	glm::vec3 v0{ 0.0f + Position.x, 0.0f + Position.y,  1.0f + Position.z};
-	glm::vec3 v1{ 0.0f + Position.x, 0.0f + Position.y, -1.0f + Position.z};
-	glm::vec3 v2{ 0.0f + Position.x, 2.0f + Position.y,  1.0f + Position.z};
-	glm::vec3 edge0 = v1 - v0;
-	glm::vec3 edge1 = v2 - v1;
-	glm::vec3 edge2 = v0 - v2;
-	glm::vec3 normal = glm::normalize(glm::cross((v1 - v0), (v2 - v0)));
+	glm::vec3 Position{ 0.0f };
+	glm::vec3 v0{ 0.0f , 0.0f,  1.0f};
+	glm::vec3 v1{ 0.0f , 0.0f, -1.0f};
+	glm::vec3 v2{ 0.0f , 2.0f,  1.0f};
 
 	int MaterialIndex = 0;
+
+	glm::vec3 GetNormal() const {
+		return glm::normalize(glm::cross((v1 - v0), (v2 - v0)));
+	}
+
+	glm::vec3 GetEdge(int edge) const {
+		switch (edge) {
+		case 0:
+			return (v1 - Position) - (v0 - Position);
+			break;
+
+		case 1:
+			return (v2 - Position) - (v1 - Position);
+			break;
+
+		case 2:
+			return (v0 - Position) - (v2 - Position);
+			break;
+		default:
+			return (v1 - Position) - (v0 - Position);
+			break;
+		}
+	}
+
+
 };
 
 struct Scene

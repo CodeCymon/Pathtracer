@@ -357,37 +357,40 @@ Renderer::HitPayload Renderer::TraceRay(const Ray& ray)
 	{
 		const Tri& tri = m_ActiveScene->Tris[i];
 
-		glm::vec3 origin = ray.Origin - tri.v0;
+		glm::vec3 origin = ray.Origin - tri.Position;
 
-		float NdotRayDirection = glm::dot(tri.normal, ray.Direction);
+		float NdotRayDirection = glm::dot(tri.GetNormal(), ray.Direction);
 		if (glm::abs(NdotRayDirection) < 0.0001f)
 			continue;
 
-		float D = -glm::dot(tri.normal, tri.v0);
+		float d = -glm::dot(tri.GetNormal(), tri.v0);
 
-		float t = -(glm::dot(tri.normal, ray.Origin) + D) / NdotRayDirection;
+		float t = -(glm::dot(tri.GetNormal(), origin) + d) / NdotRayDirection;
 
 		if (t < 0.0f)
 			continue;
 
-		//if (glm::dot(ray.Direction, tri.normal) > 0)
+		// backface culling
+		//if (glm::dot(ray.Direction, tri.GetNormal()) > 0) 
 		//	continue;
 
-		glm::vec3 hitP = ray.Origin + t * ray.Direction;
+		glm::vec3 hitP = origin + t * ray.Direction;
 		glm::vec3 C;
+
+
 		glm::vec3 vp0 = hitP - tri.v0; 
-		C = glm::cross(tri.edge0, vp0);
-		if (glm::dot(tri.normal, C) < 0)
+		C = glm::cross(tri.GetEdge(0), vp0);
+		if (glm::dot(tri.GetNormal(), C) < 0)
 			continue;
 
-		glm::vec3 vp1 = hitP - tri.v1; 
-		C = glm::cross(tri.edge1, vp1); 
-		if (glm::dot(tri.normal, C) < 0) 
+		glm::vec3 vp1 = hitP - tri.v1;
+		C = glm::cross(tri.GetEdge(1), vp1);
+		if (glm::dot(tri.GetNormal(), C) < 0) 
 			continue;
 
-		glm::vec3 vp2 = hitP - tri.v2;  
-		C = glm::cross(tri.edge2, vp2); 
-		if (glm::dot(tri.normal, C) < 0) 
+		glm::vec3 vp2 = hitP - tri.v2;
+		C = glm::cross(tri.GetEdge(2), vp2);
+		if (glm::dot(tri.GetNormal(), C) < 0)
 			continue;
 
 		if (t > hitDistance)
@@ -481,7 +484,7 @@ Renderer::HitPayload Renderer::ClosestHit(const Ray& ray, float hitDistance, int
 	
 	glm::vec3 origin = ray.Origin - closestTri.Position;
 	payload.WorldPosition = origin + hitDistance * ray.Direction;
-	payload.Normal = closestTri.normal;
+	payload.Normal = closestTri.GetNormal();
 
 	payload.WorldPosition += closestTri.Position;
 	payload.fromInside = fromInside;

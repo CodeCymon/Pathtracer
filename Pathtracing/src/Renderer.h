@@ -19,7 +19,7 @@ public:
 		bool Antialiasing = true;
 		float Exposure = 1.0f;
 
-		glm::vec3 SkyColor{0.7f};
+		glm::vec3 SkyColor{0.3f};
 
 		int Bounces = 5;
 	};
@@ -40,8 +40,8 @@ private:
 	struct HitPayload
 	{
 		float hitDistance;
-		glm::vec3 WorldPosition;
-		glm::vec3 Normal;
+		glm::vec3 WorldPosition{};
+		glm::vec3 Normal{};
 		bool fromInside = false;
 
 		int ObjectIndex;

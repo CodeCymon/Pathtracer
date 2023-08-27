@@ -20,7 +20,17 @@ public:
 		Material& white = m_Scene.Materials.emplace_back();
 		white.Albedo = { 0.7f, 0.7f ,0.7f };
 		white.Specular = 0.0f;
-		white.Roughness = 0.6f;
+		white.Roughness = 1.0f;
+
+		Material& red = m_Scene.Materials.emplace_back();
+		red.Albedo = { 0.8f, 0.3f ,0.2f };
+		red.Specular = 0.0f;
+		red.Roughness = 1.0f;
+
+		Material& green = m_Scene.Materials.emplace_back();
+		green.Albedo = { 0.3f, 0.8f ,0.2f };
+		green.Specular = 0.0f;
+		green.Roughness = 1.0f;
 
 		Material& glossy = m_Scene.Materials.emplace_back();
 		glossy.Albedo = { 0.4f, 0.8f ,0.8f };
@@ -48,13 +58,114 @@ public:
 		whiteLight.EmissionColor = whiteLight.Albedo;
 		whiteLight.EmissionPower = 10.0f;
 
-		Tri triangle;
-		triangle.Position = { 0.0f, 0.0f, 0.0f };
-		triangle.v0 = { -1.0f, 0.0f, 0.0f };
-		triangle.v1 = { 1.0f, 0.0f, 0.0f };
-		triangle.v2 = { 1.0f, 0.0f, 1.0f };
-		triangle.MaterialIndex = 4;
-		m_Scene.Tris.push_back(triangle);
+		{
+			Tri triangle;
+			triangle.Position = { 0.0f, 0.0f, 0.0f };
+			triangle.v0 = { -1.0f, 0.0f ,0.0f };
+			triangle.v1 = {  1.0f, 0.0f, 0.0f };
+			triangle.v2 = { -1.0f, 2.0f ,0.0f };
+			triangle.MaterialIndex = 0;
+			m_Scene.Tris.push_back(triangle);
+		} {
+			Tri triangle;
+			triangle.Position = { 0.0f, 0.0f, 0.0f };
+			triangle.v0 = {  1.0f, 0.0f ,0.0f };
+			triangle.v1 = {  1.0f, 2.0f, 0.0f };
+			triangle.v2 = { -1.0f, 2.0f ,0.0f };
+			triangle.MaterialIndex = 0;
+			m_Scene.Tris.push_back(triangle);
+		}
+
+		{
+			Tri triangle;
+			triangle.Position = { 0.0f, 0.0f, 0.0f };
+			triangle.v0 = { 1.0f, 2.0f, 0.0f };
+			triangle.v1 = { 1.0f, 0.0f, 0.0f };
+			triangle.v2 = { 1.0f, 0.0f, 2.0f };
+			triangle.MaterialIndex = 1;
+			m_Scene.Tris.push_back(triangle);
+		} {
+			Tri triangle;
+			triangle.Position = { 0.0f, 0.0f, 0.0f };
+			triangle.v0 = { 1.0f, 2.0f, 0.0f };
+			triangle.v1 = { 1.0f, 0.0f, 2.0f };
+			triangle.v2 = { 1.0f, 2.0f, 2.0f };
+			triangle.MaterialIndex = 1;
+			m_Scene.Tris.push_back(triangle);
+		}
+
+		{
+			Tri triangle;
+			triangle.Position = { 0.0f, 0.0f, 0.0f };
+			triangle.v0 = { -1.0f, 0.0f, 0.0f };
+			triangle.v1 = { -1.0f, 2.0f, 0.0f };
+			triangle.v2 = { -1.0f, 2.0f, 2.0f };
+			triangle.MaterialIndex = 2;
+			m_Scene.Tris.push_back(triangle);
+		} {
+			Tri triangle;
+			triangle.Position = { 0.0f, 0.0f, 0.0f };
+			triangle.v0 = { -1.0f, 0.0f, 2.0f };
+			triangle.v1 = { -1.0f, 0.0f, 0.0f };
+			triangle.v2 = { -1.0f, 2.0f, 2.0f };
+			triangle.MaterialIndex = 2;
+			m_Scene.Tris.push_back(triangle);
+		} 
+
+		{
+			Tri triangle;
+			triangle.Position = { 0.0f, 0.0f, 0.0f };
+			triangle.v0 = {  1.0f, 0.0f, 0.0f };
+			triangle.v1 = { -1.0f, 0.0f, 0.0f };
+			triangle.v2 = { -1.0f, 0.0f, 2.0f };
+			triangle.MaterialIndex = 0;
+			m_Scene.Tris.push_back(triangle);
+		} {
+			Tri triangle;
+			triangle.Position = { 0.0f, 0.0f, 0.0f };
+			triangle.v0 = {  1.0f, 0.0f, 0.0f };
+			triangle.v1 = { -1.0f, 0.0f, 2.0f };
+			triangle.v2 = {  1.0f, 0.0f, 2.0f };
+			triangle.MaterialIndex = 0;
+			m_Scene.Tris.push_back(triangle);
+		} 
+
+		{
+			Tri triangle;
+			triangle.Position = { 0.0f, 0.0f, 0.0f };
+			triangle.v0 = { -1.0f, 2.0f, 0.0f };
+			triangle.v1 = {  1.0f, 2.0f, 0.0f };
+			triangle.v2 = { -1.0f, 2.0f, 2.0f };
+			triangle.MaterialIndex = 0;
+			m_Scene.Tris.push_back(triangle);
+		} {
+			Tri triangle;
+			triangle.Position = { 0.0f, 0.0f, 0.0f };
+			triangle.v0 = {  1.0f, 2.0f, 0.0f };
+			triangle.v1 = {  1.0f, 2.0f, 2.0f };
+			triangle.v2 = { -1.0f, 2.0f, 2.0f };
+			triangle.MaterialIndex = 0;
+			m_Scene.Tris.push_back(triangle);
+		}
+		
+		{
+			Tri triangle;
+			triangle.Position = { 0.0f, 0.0f, 0.0f };
+			triangle.v0 = { -0.2f, 2.0f, 0.8f };
+			triangle.v1 = { 0.2f,  2.0f, 0.8f };
+			triangle.v2 = { -0.2f, 2.0f, 1.2f };
+			triangle.MaterialIndex = 6;
+			m_Scene.Tris.push_back(triangle);
+		} {
+			Tri triangle;
+			triangle.Position = { 0.0f, 0.0f, 0.0f };
+			triangle.v0 = { 0.2f, 2.0f, 0.8f };
+			triangle.v1 = { 0.2f, 2.0f, 1.2f };
+			triangle.v2 = { -0.2f,2.0f, 1.2f };
+			triangle.MaterialIndex = 6;
+			m_Scene.Tris.push_back(triangle);
+		}
+
 	}
 
 	virtual void OnUpdate(float ts) override
@@ -68,6 +179,8 @@ public:
 	{
 		ImGui::Begin("Settings");
 		ImGui::Text("Render Time: %.3fms", m_LastRenderTime);
+		ImGui::Text("Triangles: %i", m_Scene.Tris.size());
+		
 		if (ImGui::Button("Render"))
 		{
 			Render();
@@ -80,11 +193,32 @@ public:
 		ImGui::DragInt("Bounces", &m_Renderer.GetSettings().Bounces, 1.0f, 2.0f, 8.0f);
 		ImGui::Checkbox("AA", &m_Renderer.GetSettings().Antialiasing); 
 
-
 		if (ImGui::Button("Reset"))
 		{
 			m_Renderer.ResetFrameIndex();
 		}
+		ImGui::End();
+
+		ImGui::Begin("Materials");
+
+		for (size_t i = 0; i < m_Scene.Materials.size(); i++)
+		{
+			ImGui::PushID(i);
+
+
+			Material& material = m_Scene.Materials[i];
+			ImGui::Text("Material %i", i);
+			ImGui::ColorEdit3("Albedo", glm::value_ptr(material.Albedo));
+			ImGui::DragFloat("Roughness", &material.Roughness, 0.05f, 0.0f, 1.0f); 
+			ImGui::DragFloat("Metallic", &material.Specular, 0.05f, 0.0f, 1.0f); 
+			ImGui::DragFloat("Transmission", &material.Transmission, 0.05f, 0.0f, 1.0f); 
+			ImGui::DragFloat("Emission Strength", &material.EmissionPower, 0.05f, 0.0f, FLT_MAX); 
+			ImGui::ColorEdit3("Emission", glm::value_ptr(material.EmissionColor));
+
+			ImGui::Separator();
+			ImGui::PopID();
+		}
+
 		ImGui::End();
 
 		ImGui::Begin("Viewport");
@@ -113,6 +247,8 @@ public:
 		m_LastRenderTime = timer.ElapsedMillis();
 	}
 
+	
+
 private:
 	Renderer m_Renderer;
 	Camera m_Camera;
@@ -127,6 +263,8 @@ Walnut::Application* Walnut::CreateApplication(int argc, char** argv)
 {
 	Walnut::ApplicationSpecification spec;
 	spec.Name = "Pathtracer";
+
+	
 
 	Walnut::Application* app = new Walnut::Application(spec);
 	app->PushLayer<ExampleLayer>();
