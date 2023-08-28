@@ -40,27 +40,6 @@ struct Tri
 	glm::vec3 GetNormal() const {
 		return glm::normalize(glm::cross((v1 - v0), (v2 - v0)));
 	}
-
-	glm::vec3 GetEdge(int edge) const {
-		switch (edge) {
-		case 0:
-			return (v1 - Position) - (v0 - Position);
-			break;
-
-		case 1:
-			return (v2 - Position) - (v1 - Position);
-			break;
-
-		case 2:
-			return (v0 - Position) - (v2 - Position);
-			break;
-		default:
-			return (v1 - Position) - (v0 - Position);
-			break;
-		}
-	}
-
-
 };
 
 struct Scene

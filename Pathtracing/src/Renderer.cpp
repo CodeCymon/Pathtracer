@@ -350,129 +350,51 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 Renderer::HitPayload Renderer::TraceRay(const Ray& ray)
 {
 	int closestObjectIndex = -1;
-	float hitDistance = std::numeric_limits<float>::max();
+	float t;
 	
-
 	for (size_t i = 0; i < m_ActiveScene->Tris.size(); i++)
 	{
 		const Tri& tri = m_ActiveScene->Tris[i];
 
+		// ray origin adjusted with global offset of the triangle
 		glm::vec3 origin = ray.Origin - tri.Position;
 
-		float NdotRayDirection = glm::dot(tri.GetNormal(), ray.Direction);
-		if (glm::abs(NdotRayDirection) < 0.0001f)
+		//Edge calculation
+		glm::vec3 v0v1 = tri.v1 - tri.v0; 
+		glm::vec3 v0v2 = tri.v2 - tri.v0; 
+
+		// pvec is negative if ray and normal are the same direction
+		glm::vec3 pvec = glm::cross(ray.Direction, v0v2);
+		float determinant = glm::dot(v0v1, pvec);  
+ 
+		// Backface Culling based on pvec relation to edge1(v0v1) (determinant)
+		if (determinant < c_kEpsilon) 
 			continue;
 
-		float d = -glm::dot(tri.GetNormal(), tri.v0);
-
-		float t = -(glm::dot(tri.GetNormal(), origin) + d) / NdotRayDirection;
-
-		if (t < 0.0f)
+		// inverted determinant
+		float invDet = 1 / determinant; 
+		// check for intersection A
+		glm::vec3 tvec = origin - tri.v0;
+		float u = glm::dot(tvec, pvec) * invDet;
+		if (u < 0 || u > 1)
+			continue;
+		// check for intersection B
+		glm::vec3 qvec = glm::cross(tvec, v0v1);
+		float v = glm::dot(ray.Direction, qvec) * invDet;
+		if (v < 0 || u + v > 1)
 			continue;
 
-		// backface culling
-		//if (glm::dot(ray.Direction, tri.GetNormal()) > 0) 
-		//	continue;
-
-		glm::vec3 hitP = origin + t * ray.Direction;
-		glm::vec3 C;
-
-
-		glm::vec3 vp0 = hitP - tri.v0; 
-		C = glm::cross(tri.GetEdge(0), vp0);
-		if (glm::dot(tri.GetNormal(), C) < 0)
-			continue;
-
-		glm::vec3 vp1 = hitP - tri.v1;
-		C = glm::cross(tri.GetEdge(1), vp1);
-		if (glm::dot(tri.GetNormal(), C) < 0) 
-			continue;
-
-		glm::vec3 vp2 = hitP - tri.v2;
-		C = glm::cross(tri.GetEdge(2), vp2);
-		if (glm::dot(tri.GetNormal(), C) < 0)
-			continue;
-
-		if (t > hitDistance)
-			continue;
-
-		hitDistance = t; 
-		closestObjectIndex = (int)i;
+		// calculate the hitdistance t
+		t = glm::dot(v0v2, qvec) * invDet; 
+		closestObjectIndex = (int)i; // set the closest Object
 	}
 
 	if (closestObjectIndex < 0)
 		return Miss(ray);
 
-	return ClosestHit(ray, hitDistance, closestObjectIndex, false);
+	return ClosestHit(ray, t, closestObjectIndex, false);
 }
 
-#define BALLS 0
-#if BALLS
-Renderer::HitPayload Renderer::TraceRay(const Ray& ray)
-{
-	int closestSphere = -1;
-	float hitDistance = std::numeric_limits<float>::max();
-	bool inside = false;
-
-	for (size_t i = 0; i < m_ActiveScene->Spheres.size(); i++)
-	{
-		const Sphere& sphere = m_ActiveScene->Spheres[i];
-		glm::vec3 origin = ray.Origin - sphere.Position;
-
-		float a = glm::dot(ray.Direction, ray.Direction);
-		float b = 2.0f * glm::dot(origin, ray.Direction);
-		float c = glm::dot(origin, origin) - sphere.Radius * sphere.Radius;
-
-		if (c > 0.0 && b > 0.0) 
-			continue;
-
-		float discriminant = b * b - 4.0f * a * c;
-		// no sphere was hit
-		if (discriminant < 0.0f)
-			continue;
-
-		// get hit distances
-		inside = false;
-		float closestT = (-b - sqrt(discriminant)) / (2.0f * a);
-		float f0 = (-b + sqrt(discriminant)) / (2.0f * a);
-		if (closestT < 0.0f)
-		{
-			inside = true;
-			closestT = f0;
-
-		}
-		if (closestT > 0.0f && closestT < hitDistance)
-		{
-			hitDistance = closestT;
-			closestSphere = (int)i;
-		}
-	}
-	if (closestSphere < 0)
-		return Miss(ray);
-
-	return ClosestHit(ray, hitDistance, closestSphere, inside);
-}
-
-Renderer::HitPayload Renderer::ClosestHit(const Ray& ray, float hitDistance, int objectIndex, bool fromInside)
-{
-	// construct the hit payload
-	Renderer::HitPayload payload;
-	payload.hitDistance = hitDistance;
-	payload.ObjectIndex = objectIndex;
-
-	const Sphere& closestSphere = m_ActiveScene->Spheres[objectIndex];
-
-	// move Sphere back to origin - calculate the position of the hit point - calculate the normal from that
-	glm::vec3 origin = ray.Origin - closestSphere.Position; 
-	payload.WorldPosition = origin + ray.Direction * hitDistance;
-	payload.Normal = glm::normalize(((ray.Origin + ray.Direction * hitDistance) - closestSphere.Position) * (fromInside ? -1.0f : 1.0f));
-	// update the world position with its actual transform (since it was moved to the origin before)
-	payload.WorldPosition += closestSphere.Position;
-	payload.fromInside = fromInside;
-	 
-	return payload;
-}
-#endif // 0
 
 Renderer::HitPayload Renderer::ClosestHit(const Ray& ray, float hitDistance, int objectIndex, bool fromInside)
 {

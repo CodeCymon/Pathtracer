@@ -39,12 +39,12 @@ private:
 
 	struct HitPayload
 	{
-		float hitDistance;
+		float hitDistance{};
 		glm::vec3 WorldPosition{};
 		glm::vec3 Normal{};
 		bool fromInside = false;
 
-		int ObjectIndex;
+		int ObjectIndex = 0;
 	};
 
 	glm::vec4 PerPixel(uint32_t x, uint32_t y);
@@ -67,6 +67,7 @@ private:
 
 	uint32_t m_FrameIndex = 1;
 
-	float c_RayBounceNormalNudge = 0.001f;
-	float c_Skydistance = 10000.0f;
+	const float c_RayBounceNormalNudge = 0.001f;
+	const float c_Skydistance = 10000.0f;
+	const float c_kEpsilon = 0.0001f;
 };
