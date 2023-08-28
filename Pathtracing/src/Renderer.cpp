@@ -406,7 +406,7 @@ Renderer::HitPayload Renderer::ClosestHit(const Ray& ray, float hitDistance, int
 	
 	glm::vec3 origin = ray.Origin - closestTri.Position;
 	payload.WorldPosition = origin + hitDistance * ray.Direction;
-	payload.Normal = closestTri.GetNormal();
+	payload.Normal = closestTri.normal; 
 
 	payload.WorldPosition += closestTri.Position;
 	payload.fromInside = fromInside;

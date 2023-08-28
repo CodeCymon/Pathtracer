@@ -64,6 +64,7 @@ public:
 			triangle.v0 = { -1.0f, 0.0f ,0.0f };
 			triangle.v1 = {  1.0f, 0.0f, 0.0f };
 			triangle.v2 = { -1.0f, 2.0f ,0.0f };
+			triangle.RecalculateNormal();
 			triangle.MaterialIndex = 0;
 			m_Scene.Tris.push_back(triangle);
 		} {
@@ -72,6 +73,7 @@ public:
 			triangle.v0 = {  1.0f, 0.0f ,0.0f };
 			triangle.v1 = {  1.0f, 2.0f, 0.0f };
 			triangle.v2 = { -1.0f, 2.0f ,0.0f };
+			triangle.RecalculateNormal();
 			triangle.MaterialIndex = 0;
 			m_Scene.Tris.push_back(triangle);
 		}
@@ -82,6 +84,7 @@ public:
 			triangle.v0 = { 1.0f, 2.0f, 0.0f };
 			triangle.v1 = { 1.0f, 0.0f, 0.0f };
 			triangle.v2 = { 1.0f, 0.0f, 2.0f };
+			triangle.RecalculateNormal();
 			triangle.MaterialIndex = 1;
 			m_Scene.Tris.push_back(triangle);
 		} {
@@ -90,6 +93,7 @@ public:
 			triangle.v0 = { 1.0f, 2.0f, 0.0f };
 			triangle.v1 = { 1.0f, 0.0f, 2.0f };
 			triangle.v2 = { 1.0f, 2.0f, 2.0f };
+			triangle.RecalculateNormal();
 			triangle.MaterialIndex = 1;
 			m_Scene.Tris.push_back(triangle);
 		}
@@ -100,6 +104,7 @@ public:
 			triangle.v0 = { -1.0f, 0.0f, 0.0f };
 			triangle.v1 = { -1.0f, 2.0f, 0.0f };
 			triangle.v2 = { -1.0f, 2.0f, 2.0f };
+			triangle.RecalculateNormal();
 			triangle.MaterialIndex = 2;
 			m_Scene.Tris.push_back(triangle);
 		} {
@@ -108,6 +113,7 @@ public:
 			triangle.v0 = { -1.0f, 0.0f, 2.0f };
 			triangle.v1 = { -1.0f, 0.0f, 0.0f };
 			triangle.v2 = { -1.0f, 2.0f, 2.0f };
+			triangle.RecalculateNormal();
 			triangle.MaterialIndex = 2;
 			m_Scene.Tris.push_back(triangle);
 		} 
@@ -118,6 +124,7 @@ public:
 			triangle.v0 = {  1.0f, 0.0f, 0.0f };
 			triangle.v1 = { -1.0f, 0.0f, 0.0f };
 			triangle.v2 = { -1.0f, 0.0f, 2.0f };
+			triangle.RecalculateNormal();
 			triangle.MaterialIndex = 0;
 			m_Scene.Tris.push_back(triangle);
 		} {
@@ -126,6 +133,7 @@ public:
 			triangle.v0 = {  1.0f, 0.0f, 0.0f };
 			triangle.v1 = { -1.0f, 0.0f, 2.0f };
 			triangle.v2 = {  1.0f, 0.0f, 2.0f };
+			triangle.RecalculateNormal();
 			triangle.MaterialIndex = 0;
 			m_Scene.Tris.push_back(triangle);
 		} 
@@ -136,6 +144,7 @@ public:
 			triangle.v0 = { -1.0f, 2.0f, 0.0f };
 			triangle.v1 = {  1.0f, 2.0f, 0.0f };
 			triangle.v2 = { -1.0f, 2.0f, 2.0f };
+			triangle.RecalculateNormal();
 			triangle.MaterialIndex = 0;
 			m_Scene.Tris.push_back(triangle);
 		} {
@@ -144,6 +153,7 @@ public:
 			triangle.v0 = {  1.0f, 2.0f, 0.0f };
 			triangle.v1 = {  1.0f, 2.0f, 2.0f };
 			triangle.v2 = { -1.0f, 2.0f, 2.0f };
+			triangle.RecalculateNormal();
 			triangle.MaterialIndex = 0;
 			m_Scene.Tris.push_back(triangle);
 		}
@@ -154,6 +164,7 @@ public:
 			triangle.v0 = { -0.2f, 2.0f, 0.8f };
 			triangle.v1 = { 0.2f,  2.0f, 0.8f };
 			triangle.v2 = { -0.2f, 2.0f, 1.2f };
+			triangle.RecalculateNormal();
 			triangle.MaterialIndex = 6;
 			m_Scene.Tris.push_back(triangle);
 		} {
@@ -162,6 +173,7 @@ public:
 			triangle.v0 = { 0.2f, 2.0f, 0.8f };
 			triangle.v1 = { 0.2f, 2.0f, 1.2f };
 			triangle.v2 = { -0.2f,2.0f, 1.2f };
+			triangle.RecalculateNormal();
 			triangle.MaterialIndex = 6;
 			m_Scene.Tris.push_back(triangle);
 		}
