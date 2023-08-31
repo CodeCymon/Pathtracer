@@ -245,7 +245,7 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 		payload = TraceRay(ray);
 
 		// return sky color or black when scene is missed
-		if (payload.hitDistance == -1.0f)
+		if (payload.hitDistance < 0.0f)
 		{
 			if(m_Settings.UseSkylight)
 				light += m_Settings.SkyColor * contribution;
@@ -350,7 +350,7 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 Renderer::HitPayload Renderer::TraceRay(const Ray& ray)
 {
 	int closestObjectIndex = -1;
-	float t;
+	float hitDistance = std::numeric_limits<float>::max();
 	
 	for (size_t i = 0; i < m_ActiveScene->Tris.size(); i++)
 	{
@@ -368,8 +368,8 @@ Renderer::HitPayload Renderer::TraceRay(const Ray& ray)
 		float determinant = glm::dot(v0v1, pvec);  
  
 		// Backface Culling based on pvec relation to edge1(v0v1) (determinant)
-		if (determinant < c_kEpsilon) 
-			continue;
+		//if (determinant < c_kEpsilon) 
+		//	continue;
 
 		// inverted determinant
 		float invDet = 1 / determinant; 
@@ -378,6 +378,7 @@ Renderer::HitPayload Renderer::TraceRay(const Ray& ray)
 		float u = glm::dot(tvec, pvec) * invDet;
 		if (u < 0 || u > 1)
 			continue;
+
 		// check for intersection B
 		glm::vec3 qvec = glm::cross(tvec, v0v1);
 		float v = glm::dot(ray.Direction, qvec) * invDet;
@@ -385,14 +386,23 @@ Renderer::HitPayload Renderer::TraceRay(const Ray& ray)
 			continue;
 
 		// calculate the hitdistance t
-		t = glm::dot(v0v2, qvec) * invDet; 
-		closestObjectIndex = (int)i; // set the closest Object
+		float t = glm::dot(v0v2, qvec) * invDet; 
+
+		if (t < 0.0f)
+			continue;
+
+		if (t < hitDistance)
+		{
+			hitDistance = t;
+			closestObjectIndex = (int)i; // set the closest Object
+		}
+
 	}
 
 	if (closestObjectIndex < 0)
 		return Miss(ray);
 
-	return ClosestHit(ray, t, closestObjectIndex, false);
+	return ClosestHit(ray, hitDistance, closestObjectIndex, false);
 }
 
 

@@ -19,38 +19,18 @@ public:
 	{
 		Material& white = m_Scene.Materials.emplace_back();
 		white.Albedo = { 0.7f, 0.7f ,0.7f };
-		white.Specular = 0.0f;
-		white.Roughness = 1.0f;
+		white.Specular = 0.02f;
+		white.Roughness = 0.7f;
 
 		Material& red = m_Scene.Materials.emplace_back();
 		red.Albedo = { 0.8f, 0.3f ,0.2f };
-		red.Specular = 0.0f;
-		red.Roughness = 1.0f;
+		red.Specular = 0.02f;
+		red.Roughness = 0.7f;
 
 		Material& green = m_Scene.Materials.emplace_back();
 		green.Albedo = { 0.3f, 0.8f ,0.2f };
-		green.Specular = 0.0f;
-		green.Roughness = 1.0f;
-
-		Material& glossy = m_Scene.Materials.emplace_back();
-		glossy.Albedo = { 0.4f, 0.8f ,0.8f };
-		glossy.Specular = 0.0f;
-		glossy.Roughness = 0.2f;
-		glossy.IOR = 1.4f;
-
-		Material& metal = m_Scene.Materials.emplace_back();
-		metal.Albedo = { 0.9f, 0.9f ,0.9f };
-		metal.Specular = 1.0f;
-		metal.Roughness = 0.1f;
-		metal.IOR = 1.5f;
-
-		Material& glass= m_Scene.Materials.emplace_back();
-		glass.Albedo = { 1.0f, 1.0f ,1.0f };
-		glass.Specular = 0.0f;
-		glass.Roughness = 0.1f;
-		glass.IOR = 1.5f;
-		glass.Transmission = 1.0f;
-		glass.TransmissionCoeff = { 0.2f, 0.2f ,0.2f };
+		green.Specular = 0.02f;
+		green.Roughness = 0.7f;
 		
 		Material& whiteLight = m_Scene.Materials.emplace_back();
 		whiteLight.Albedo = { 1.0f, 1.0f , 1.0f }; 
@@ -59,124 +39,53 @@ public:
 		whiteLight.EmissionPower = 10.0f;
 
 		{
-			Tri triangle;
-			triangle.Position = { 0.0f, 0.0f, 0.0f };
-			triangle.v0 = { -1.0f, 0.0f ,0.0f };
-			triangle.v1 = {  1.0f, 0.0f, 0.0f };
-			triangle.v2 = { -1.0f, 2.0f ,0.0f };
-			triangle.RecalculateNormal();
-			triangle.MaterialIndex = 0;
-			m_Scene.Tris.push_back(triangle);
-		} {
-			Tri triangle;
-			triangle.Position = { 0.0f, 0.0f, 0.0f };
-			triangle.v0 = {  1.0f, 0.0f ,0.0f };
-			triangle.v1 = {  1.0f, 2.0f, 0.0f };
-			triangle.v2 = { -1.0f, 2.0f ,0.0f };
-			triangle.RecalculateNormal();
-			triangle.MaterialIndex = 0;
-			m_Scene.Tris.push_back(triangle);
-		}
+			Object cube;
+			int numTris = 0;
+			// find out how many triangles we need to create for this mesh
+			for (uint32_t i = 0; i < cube.numFaces; ++i) {
+				numTris += cube.faceIndex[i] - 2;
+			}
 
-		{
-			Tri triangle;
-			triangle.Position = { 0.0f, 0.0f, 0.0f };
-			triangle.v0 = { 1.0f, 2.0f, 0.0f };
-			triangle.v1 = { 1.0f, 0.0f, 0.0f };
-			triangle.v2 = { 1.0f, 0.0f, 2.0f };
-			triangle.RecalculateNormal();
-			triangle.MaterialIndex = 1;
-			m_Scene.Tris.push_back(triangle);
-		} {
-			Tri triangle;
-			triangle.Position = { 0.0f, 0.0f, 0.0f };
-			triangle.v0 = { 1.0f, 2.0f, 0.0f };
-			triangle.v1 = { 1.0f, 0.0f, 2.0f };
-			triangle.v2 = { 1.0f, 2.0f, 2.0f };
-			triangle.RecalculateNormal();
-			triangle.MaterialIndex = 1;
-			m_Scene.Tris.push_back(triangle);
-		}
+			cube.trisIndex[numTris * 3];
 
-		{
-			Tri triangle;
-			triangle.Position = { 0.0f, 0.0f, 0.0f };
-			triangle.v0 = { -1.0f, 0.0f, 0.0f };
-			triangle.v1 = { -1.0f, 2.0f, 0.0f };
-			triangle.v2 = { -1.0f, 2.0f, 2.0f };
-			triangle.RecalculateNormal();
-			triangle.MaterialIndex = 2;
-			m_Scene.Tris.push_back(triangle);
-		} {
-			Tri triangle;
-			triangle.Position = { 0.0f, 0.0f, 0.0f };
-			triangle.v0 = { -1.0f, 0.0f, 2.0f };
-			triangle.v1 = { -1.0f, 0.0f, 0.0f };
-			triangle.v2 = { -1.0f, 2.0f, 2.0f };
-			triangle.RecalculateNormal();
-			triangle.MaterialIndex = 2;
-			m_Scene.Tris.push_back(triangle);
-		} 
+			// generate the triangle index array
+			for (uint32_t i = 0, k = 0; i < cube.numFaces; ++i) {  //for each  face  
+				for (uint32_t j = 0; j < cube.faceIndex[i] - 2; ++j) {  //for each triangle in the face  
+					
+					Tri triangle;
+					triangle.v0 = cube.verts[cube.vertexIndex[k]];				// v0
+					triangle.v1 = cube.verts[cube.vertexIndex[k + j + 1]];		// v1
+					triangle.v2 = cube.verts[cube.vertexIndex[k + j + 2]];		// v2
+					triangle.RecalculateFlippedNormal();
+					triangle.MaterialIndex = 0;
+					m_Scene.Tris.push_back(triangle);
 
-		{
-			Tri triangle;
-			triangle.Position = { 0.0f, 0.0f, 0.0f };
-			triangle.v0 = {  1.0f, 0.0f, 0.0f };
-			triangle.v1 = { -1.0f, 0.0f, 0.0f };
-			triangle.v2 = { -1.0f, 0.0f, 2.0f };
-			triangle.RecalculateNormal();
-			triangle.MaterialIndex = 0;
-			m_Scene.Tris.push_back(triangle);
-		} {
-			Tri triangle;
-			triangle.Position = { 0.0f, 0.0f, 0.0f };
-			triangle.v0 = {  1.0f, 0.0f, 0.0f };
-			triangle.v1 = { -1.0f, 0.0f, 2.0f };
-			triangle.v2 = {  1.0f, 0.0f, 2.0f };
-			triangle.RecalculateNormal();
-			triangle.MaterialIndex = 0;
-			m_Scene.Tris.push_back(triangle);
-		} 
-
-		{
-			Tri triangle;
-			triangle.Position = { 0.0f, 0.0f, 0.0f };
-			triangle.v0 = { -1.0f, 2.0f, 0.0f };
-			triangle.v1 = {  1.0f, 2.0f, 0.0f };
-			triangle.v2 = { -1.0f, 2.0f, 2.0f };
-			triangle.RecalculateNormal();
-			triangle.MaterialIndex = 0;
-			m_Scene.Tris.push_back(triangle);
-		} {
-			Tri triangle;
-			triangle.Position = { 0.0f, 0.0f, 0.0f };
-			triangle.v0 = {  1.0f, 2.0f, 0.0f };
-			triangle.v1 = {  1.0f, 2.0f, 2.0f };
-			triangle.v2 = { -1.0f, 2.0f, 2.0f };
-			triangle.RecalculateNormal();
-			triangle.MaterialIndex = 0;
-			m_Scene.Tris.push_back(triangle);
+				}
+				k += cube.faceIndex[i];
+			}
 		}
 		
 		{
-			Tri triangle;
-			triangle.Position = { 0.0f, 0.0f, 0.0f };
-			triangle.v0 = { -0.2f, 2.0f, 0.8f };
-			triangle.v1 = { 0.2f,  2.0f, 0.8f };
-			triangle.v2 = { -0.2f, 2.0f, 1.2f };
-			triangle.RecalculateNormal();
-			triangle.MaterialIndex = 6;
-			m_Scene.Tris.push_back(triangle);
-		} {
-			Tri triangle;
-			triangle.Position = { 0.0f, 0.0f, 0.0f };
-			triangle.v0 = { 0.2f, 2.0f, 0.8f };
-			triangle.v1 = { 0.2f, 2.0f, 1.2f };
-			triangle.v2 = { -0.2f,2.0f, 1.2f };
-			triangle.RecalculateNormal();
-			triangle.MaterialIndex = 6;
-			m_Scene.Tris.push_back(triangle);
+			Tri tr;
+			tr.v0 = {0.2f,  0.99f, -0.2f };
+			tr.v1 = {0.2f,  0.99f, 0.2f };
+			tr.v2 = {-0.2f, 0.99f, 0.2f };
+			tr.RecalculateNormal();
+			tr.MaterialIndex = 3;
+			m_Scene.Tris.push_back(tr);
 		}
+
+		{
+			Tri tr;
+			tr.v0 = { 0.2f,  0.99f, -0.2f };
+			tr.v1 = { -0.2f, 0.99f, 0.2f };
+			tr.v2 = { -0.2f, 0.99f, -0.2f };
+			tr.RecalculateNormal();
+			tr.MaterialIndex = 3;
+			m_Scene.Tris.push_back(tr);
+		}
+
+		
 
 	}
 
@@ -258,7 +167,6 @@ public:
 		
 		m_LastRenderTime = timer.ElapsedMillis();
 	}
-
 	
 
 private:
